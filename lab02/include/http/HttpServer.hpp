@@ -18,13 +18,14 @@
 #include "../tcp/TcpListener.hpp"
 #include "../tcp/TcpSocket.hpp"
 #include "HttpServerLogger.hpp"
+#include "req/Request.hpp"
 
 class HttpServer {
     // inline size_t safeReadRunningCount();
     inline size_t cleanup();
 
     void launchWorker(TcpSocket);
-    void worker();
+    void worker(const int, TcpSocket);
 
 public:
     enum class State {
@@ -53,6 +54,7 @@ public:
     HttpServer(const int portno=80, const size_t max_threads=10);
 
     void listen();
+    void stop();
 
     static void setHttpServerLogger(
         std::shared_ptr<HttpServerLogger> loggerPtr
@@ -63,6 +65,8 @@ public:
     );
 
 };
+
+
 
 // Inline methods:
 // inline size_t HttpServer::safeReadRunningCount() {

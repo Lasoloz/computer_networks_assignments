@@ -4,7 +4,7 @@
  * 522-es csoport
  * Lab02
 */
-#include "TcpException.hpp"
+#include <tcp/TcpException.hpp>
 
 TcpException::TcpException(const std::string &message) noexcept
     : std::runtime_error(message)

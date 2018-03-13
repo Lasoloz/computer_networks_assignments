@@ -5,7 +5,7 @@
  * lab02
 */
 
-#include "HttpServerLogger.hpp"
+#include <http/HttpServerLogger.hpp>
 
 HttpServerLogger::HttpServerLogger(std::ostream *capturedStream) {
     _out = capturedStream;

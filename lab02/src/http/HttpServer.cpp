@@ -5,7 +5,7 @@
  * Lab02
 */
 
-#include "HttpServer.hpp"
+#include <http/HttpServer.hpp>
 
 #define SERVER_LISTEN_INTERVAL 500
 #define HTTP_SERVER_HEAD "[HttpServer] "
@@ -35,10 +35,12 @@ HttpServer::HttpServer(const int portno, const size_t max_threads)
 void HttpServer::listen() {
     listener.startListen();
     _serverState = HttpServer::State::RUNNING;
+    HttpServer::State currentState = _serverState;
 
-    while (_serverState == HttpServer::State::RUNNING) {
+    while (currentState == HttpServer::State::RUNNING) {
         try {
             TcpSocket sock = listener.acceptConn();
+            sock.setBlockingState(false);
 
             HttpServer::_loggerPtr->write(
                 HTTP_SERVER_HEAD,
@@ -62,7 +64,27 @@ void HttpServer::listen() {
             // Clean up finished workers:
             cleanup();
         }
+
+        // Refresh state:
+        std::unique_lock<std::mutex> lck(_stateMutex);
+        currentState = _serverState;
     }
+
+    // Wait for running instances:
+    _stateMutex.lock();
+    int currentCount = _running_count;
+    _stateMutex.unlock();
+    while (currentCount != 0) {
+        cleanup();
+        std::unique_lock<std::mutex> lck(_stateMutex);
+        currentCount = _running_count;
+    }
+}
+
+void HttpServer::stop() {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::unique_lock<std::mutex> lck(_stateMutex);
+    _serverState = HttpServer::State::STOPPED;
 }
 
 
@@ -86,7 +108,9 @@ void HttpServer::launchWorker(TcpSocket sock) {
 
     // Launch new worker thread:
     std::unique_lock<std::mutex> stateLck(_stateMutex);
-    _answerThreads[freePos].reset(new std::thread(&HttpServer::worker, this));
+    _answerThreads[freePos].reset(new std::thread(
+        &HttpServer::worker, this, freePos, std::move(sock)
+    ));
     _threadStates[freePos] = HttpServer::State::RUNNING;
     ++_running_count;
 
@@ -99,19 +123,33 @@ void HttpServer::launchWorker(TcpSocket sock) {
 }
 
 
-void HttpServer::worker() {
+void HttpServer::worker(const int currentPos, TcpSocket sock) {
     std::thread::id tid = std::this_thread::get_id();
-    HttpServer::_accessLogPtr->write(
-        HTTP_SERVER_THR_HEAD,
-        tid,
-        "] Welcome from the thread"
-    );
-    HttpServer::_accessLogPtr->write(
-        HTTP_SERVER_THR_HEAD,
-        tid,
-        "] Doing some heavy calculations..."
-    );
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+
+    try {
+        Request req = Request::parseReqest(sock);
+
+        HttpServer::_accessLogPtr->write(
+            HTTP_SERVER_THR_HEAD, tid,
+            "] Received GET request: ", req
+        );
+
+        req.answerRequest(sock);
+        HttpServer::_accessLogPtr->write(
+            HTTP_SERVER_THR_HEAD, tid,
+            "] Sent answer for GET request: ", req
+        );
+    } catch (std::runtime_error &err) {
+        std::string errStr(err.what());
+        HttpServer::_accessLogPtr->write(
+            HTTP_SERVER_THR_HEAD, tid,
+            "] Received invalid request. Error: ", errStr
+        );
+    }
+
+    // Mark finished state:
+    std::unique_lock<std::mutex> lck(_stateMutex);
+    _threadStates[currentPos] = HttpServer::State::FINISHED;
 }
 
 
