@@ -14,4 +14,4 @@ probably won't lose it later.
 
 2. Using Wireshark (`currently not tracked`)
 
-3. HTTP server ([`lab03`](https://github.com/Lasoloz/computer_networks_assignments/tree/master/lab02))
+3. HTTP server ([`lab02`](https://github.com/Lasoloz/computer_networks_assignments/tree/master/lab02))
