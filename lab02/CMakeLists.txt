@@ -8,14 +8,17 @@ project(lab02)
 
 set (CMAKE_CXX_STANDARD 11)
 
+include_directories(include)
+
 add_executable(
     lab02
     hlim1626_server.cpp
-    tcp/TcpException.cpp
-    tcp/TcpListener.cpp
-    tcp/TcpSocket.cpp
-    http/HttpServer.cpp
-    http/HttpServerLogger.cpp
+    src/tcp/TcpException.cpp
+    src/tcp/TcpListener.cpp
+    src/tcp/TcpSocket.cpp
+    src/http/HttpServer.cpp
+    src/http/HttpServerLogger.cpp
+    src/http/req/Request.cpp
 )
 
 target_link_libraries(lab02 pthread)

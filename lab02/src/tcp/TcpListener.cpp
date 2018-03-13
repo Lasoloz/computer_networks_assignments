@@ -4,7 +4,7 @@
  * 522-es csoport
  * Lab02
 */
-#include "TcpListener.hpp"
+#include <tcp/TcpListener.hpp>
 
 TcpListener::TcpListener()
     : _sockfd(0)
@@ -86,6 +86,12 @@ void TcpListener::open(const int portno, const TcpListener::ModeFlags modeFlags)
     _sockfd = socket(info->ai_family, info->ai_socktype, info->ai_protocol);
     if (_sockfd < 0) {
         throw TcpException::createErrnoTcpException("Failed to open socket");
+    }
+
+    int yes = 1;
+
+    if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1) {
+        throw TcpException::createErrnoTcpException("Failed to reuse socket");
     }
 
     // Let's bind the socket to the address:
