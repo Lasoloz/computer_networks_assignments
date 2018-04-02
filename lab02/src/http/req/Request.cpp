@@ -20,7 +20,8 @@ Request::Request(std::string path) : _path(path) {}
 void Request::answerRequest(TcpSocket &sock) {
     if (_path == "/") {
         const char buf[] = "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/plain\r\n\r\n"
+            "Content-Type: text/plain\r\n"
+            "Connection: Close\r\n\r\n"
             "The mini HTTP server is working!\n";
 
         if (sock.sendMsg(buf, sizeof(buf) - 1) < 0) {
@@ -40,7 +41,7 @@ void Request::answerRequest(TcpSocket &sock) {
         // Send response head:
         std::ostringstream oss;
         oss << "HTTP/1.1 200 OK\r\nContent-Type: " << result.second
-            << "\r\n\r\n ";
+            << "\r\nConnection: Close\r\n\r\n ";
 
         std::string head = oss.str();
         sock.sendMsg(head.c_str(), head.size() - 1);
@@ -152,7 +153,7 @@ std::pair<std::ifstream, std::string> Request::matchFileExtension(
     } else if (ext == "gif") {// `g` like in gift or graphics
         mime = "image/gif";
         binary = true;
-    } else if (ext == "flv") {
+    } else if (ext == "swf") {
         mime = "application/x-shockwave-flash";
         binary = true;
     } else if (ext == "css") {

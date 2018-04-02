@@ -3,6 +3,16 @@
  * hlim1626
  * 522-es csoport
  * Lab02
+ *
+ * Build és futtatás:
+ * ```sh
+ * $ mkdir build && cd build
+ * $ cmake .. && make
+ * $ cd ../resources/
+ * $ ../build/lab02 <portno>
+ * ```
+ *
+ * Sigint bezárja a szervert _graceful_ módon
 */
 #include <iostream>
 #include <memory>
