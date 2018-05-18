@@ -1,0 +1,6 @@
+[package]
+name = "simpledns"
+version = "0.1.0"
+authors = ["Lasoloz <heim97laszlo@gmail.com>"]
+
+[dependencies]
