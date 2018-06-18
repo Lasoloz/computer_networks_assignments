@@ -9,9 +9,9 @@ package com.github.lasoloz.mandelbrot.client;
 import com.github.lasoloz.mandelbrot.message.DrawRequest;
 import com.github.lasoloz.mandelbrot.message.TransmittedBufferedImage;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
@@ -46,6 +46,14 @@ public class ClientApplication {
                     new TransmittedBufferedImage(renderer.render());
 
             oos.writeObject(image);
+
+            // Vizsga:
+            System.out.println("Bejön");
+            DrawRequest numRequest = (DrawRequest) ois.readObject();
+            System.out.println("Olvasva");
+            BufferedImage writtenImage = image.getImage();
+            File imageFile = new File(Integer.toString(numRequest.getWidth()) + ".png");
+            ImageIO.write(writtenImage, "png", imageFile);
 
             oos.close();
             ois.close();
